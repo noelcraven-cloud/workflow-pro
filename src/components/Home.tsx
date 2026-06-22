@@ -23,18 +23,19 @@ function Home({ triageCount }: HomeProps) {
         <h1>Workflow Pro</h1>
 
         <button
-          style={{
-            width: "48px",
-            height: "48px",
-            borderRadius: "50%",
-            fontSize: "28px",
-            border: "1px solid lightgrey",
-            cursor: "pointer",
-            background: "white",
-          }}
-        >
-          +
-        </button>
+  onClick={() => alert("Quick Add coming soon")}
+  style={{
+    width: "48px",
+    height: "48px",
+    borderRadius: "50%",
+    fontSize: "28px",
+    border: "1px solid lightgrey",
+    cursor: "pointer",
+    background: "white",
+  }}
+>
+  +
+</button>
       </div>
 
       <Section title="📥 Triage" count={triageCount} />
