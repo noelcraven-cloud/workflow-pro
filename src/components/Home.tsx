@@ -81,11 +81,29 @@ function Home({
   <div
     key={task}
     style={{
-      paddingLeft: "16px",
-      paddingBottom: "8px",
+      display: "flex",
+      alignItems: "center",
+
+      padding: "12px",
+
+      marginBottom: "8px",
+
+      border: "1px solid lightgrey",
+
+      borderRadius: "10px",
     }}
   >
-    • {task}
+    <input
+      type="checkbox"
+
+      disabled
+
+      style={{
+        marginRight: "12px",
+      }}
+    />
+
+    {task}
   </div>
 ))}
 
