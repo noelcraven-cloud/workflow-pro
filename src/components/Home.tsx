@@ -2,10 +2,17 @@ import { useState } from "react";
 
 type HomeProps = {
   triageCount: number;
+
+  triageTasks: string[];
+
   addTask: (title: string) => void;
 };
 
-function Home({ triageCount, addTask }: HomeProps) {
+function Home({
+  triageCount,
+  triageTasks,
+  addTask,
+}: HomeProps) {
   const [showQuickAdd, setShowQuickAdd] = useState(false);
 
   const [taskTitle, setTaskTitle] = useState("");
@@ -65,7 +72,22 @@ function Home({ triageCount, addTask }: HomeProps) {
         </div>
       )}
 
-      <Section title="📥 Triage" count={triageCount} />
+      <Section
+  title="📥 Triage"
+  count={triageCount}
+/>
+
+{triageTasks.map((task) => (
+  <div
+    key={task}
+    style={{
+      paddingLeft: "16px",
+      paddingBottom: "8px",
+    }}
+  >
+    • {task}
+  </div>
+))}
 
       <Section title="👤 Me" count={0} />
 

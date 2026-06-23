@@ -4,15 +4,7 @@ import Home from "./components/Home";
 import type { Task } from "./types/task";
 
 function App() {
-  const [tasks, setTasks] = useState<Task[]>([
-    {
-      id: "1",
-      title: "Welcome to Workflow Pro",
-      status: "TRIAGE",
-      people: [],
-      taskType: "RANKED",
-    },
-  ]);
+  const [tasks, setTasks] = useState<Task[]>([]);
 
   function addTask(title: string) {
     const trimmedTitle = title.trim();
@@ -31,15 +23,20 @@ function App() {
   }
 
   const triageCount = tasks.filter(
-    (task) => task.status === "TRIAGE"
-  ).length;
+  (task) => task.status === "TRIAGE"
+).length;
 
-  return (
-    <Home
-      triageCount={triageCount}
-      addTask={addTask}
-    />
-  );
+const triageTasks = tasks
+  .filter((task) => task.status === "TRIAGE")
+  .map((task) => task.title);
+
+return (
+  <Home
+    triageCount={triageCount}
+    triageTasks={triageTasks}
+    addTask={addTask}
+  />
+);
 }
 
 export default App;
