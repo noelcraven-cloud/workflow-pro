@@ -11,13 +11,7 @@ type HomeProps = {
   ) => void;
 };
 
-const favouritePeople = [
-  "Me",
-  "Hajnal",
-  "Austen",
-  "Kevin",
-  "John",
-];
+import { favouritePeople } from "../data/favourites";
 
 function Home({
   triageCount,
