@@ -12,13 +12,14 @@ function App() {
     if (!trimmedTitle) return;
 
     const newTask: Task = {
-      id: Date.now().toString(),
-      title: trimmedTitle,
-      status: "TRIAGE",
-      people: [],
-      taskType: "RANKED",
-      createdAt: new Date().toISOString(),
-    };
+  id: Date.now().toString(),
+  title: trimmedTitle,
+  status: "TRIAGE",
+  people: [],
+  personRanks: {},
+  taskType: "RANKED",
+  createdAt: new Date().toISOString(),
+};
 
     setTasks((currentTasks) => [...currentTasks, newTask]);
   }

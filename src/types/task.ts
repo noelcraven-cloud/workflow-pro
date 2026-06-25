@@ -7,6 +7,8 @@ export type Task = {
 
   people: string[];
 
+  personRanks?: Record<string, number>;
+
   rank?: number;
 
   project?: string;
