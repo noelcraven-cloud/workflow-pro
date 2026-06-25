@@ -1,21 +1,40 @@
 import { useState } from "react";
+import type { Task } from "../types/task";
 
 type HomeProps = {
   triageCount: number;
-
-  triageTasks: string[];
-
+  triageTasks: Task[];
   addTask: (title: string) => void;
+  updateTaskPeople: (
+    taskId: string,
+    people: string[]
+  ) => void;
 };
+
+const favouritePeople = [
+  "Me",
+  "Hajnal",
+  "Austen",
+  "Kevin",
+  "John",
+];
 
 function Home({
   triageCount,
   triageTasks,
   addTask,
+  updateTaskPeople,
 }: HomeProps) {
-  const [showQuickAdd, setShowQuickAdd] = useState(false);
+  const [showQuickAdd, setShowQuickAdd] =
+    useState(false);
 
   const [taskTitle, setTaskTitle] = useState("");
+
+  const [editingPeopleTaskId, setEditingPeopleTaskId] =
+    useState<string | null>(null);
+
+  const [selectedPeople, setSelectedPeople] =
+    useState<string[]>([]);
 
   function createTask() {
     addTask(taskTitle);
@@ -23,6 +42,33 @@ function Home({
     setTaskTitle("");
 
     setShowQuickAdd(false);
+  }
+
+  function beginPeopleAssignment(task: Task) {
+    setEditingPeopleTaskId(task.id);
+
+    setSelectedPeople(task.people);
+  }
+
+  function togglePerson(person: string) {
+    setSelectedPeople((current) =>
+      current.includes(person)
+        ? current.filter((p) => p !== person)
+        : [...current, person]
+    );
+  }
+
+  function savePeople() {
+    if (!editingPeopleTaskId) return;
+
+    updateTaskPeople(
+      editingPeopleTaskId,
+      selectedPeople
+    );
+
+    setEditingPeopleTaskId(null);
+
+    setSelectedPeople([]);
   }
 
   return (
@@ -73,39 +119,88 @@ function Home({
       )}
 
       <Section
-  title="📥 Triage"
-  count={triageCount}
-/>
+        title="📥 Triage"
+        count={triageCount}
+      />
 
-{triageTasks.map((task) => (
-  <div
-    key={task}
-    style={{
-      display: "flex",
-      alignItems: "center",
+      {triageTasks.map((task) => (
+        <div
+          key={task.id}
+          style={{
+            padding: "12px",
+            marginBottom: "12px",
+            border: "1px solid lightgrey",
+            borderRadius: "10px",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              marginBottom: "8px",
+            }}
+          >
+            <input
+              type="checkbox"
+              disabled
+              style={{
+                marginRight: "12px",
+              }}
+            />
 
-      padding: "12px",
+            <strong>{task.title}</strong>
+          </div>
 
-      marginBottom: "8px",
+          <div
+            style={{
+              marginBottom: "12px",
+            }}
+          >
+            People:{" "}
+            {task.people.length > 0
+              ? task.people.join(" & ")
+              : "Unassigned"}
+          </div>
 
-      border: "1px solid lightgrey",
+          {editingPeopleTaskId === task.id ? (
+            <>
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: "8px",
+                  marginBottom: "12px",
+                }}
+              >
+                {favouritePeople.map((person) => (
+                  <button
+                    key={person}
+                    onClick={() =>
+                      togglePerson(person)
+                    }
+                  >
+                    {selectedPeople.includes(person)
+                      ? `✓ ${person}`
+                      : person}
+                  </button>
+                ))}
+              </div>
 
-      borderRadius: "10px",
-    }}
-  >
-    <input
-      type="checkbox"
-
-      disabled
-
-      style={{
-        marginRight: "12px",
-      }}
-    />
-
-    {task}
-  </div>
-))}
+              <button onClick={savePeople}>
+                Save People
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() =>
+                beginPeopleAssignment(task)
+              }
+            >
+              Assign People
+            </button>
+          )}
+        </div>
+      ))}
 
       <Section title="👤 Me" count={0} />
 
@@ -127,20 +222,14 @@ function Home({
           position: "fixed",
           right: "24px",
           bottom: "24px",
-
           width: "60px",
           height: "60px",
-
           borderRadius: "50%",
-
           fontSize: "36px",
-
           border: "none",
-
           cursor: "pointer",
-
-          boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
-
+          boxShadow:
+            "0 2px 8px rgba(0,0,0,0.25)",
           zIndex: 1000,
         }}
       >
@@ -155,7 +244,10 @@ type SectionProps = {
   count: number;
 };
 
-function Section({ title, count }: SectionProps) {
+function Section({
+  title,
+  count,
+}: SectionProps) {
   return (
     <div
       style={{

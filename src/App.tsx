@@ -17,26 +17,37 @@ function App() {
       status: "TRIAGE",
       people: [],
       taskType: "RANKED",
+      createdAt: new Date().toISOString(),
     };
 
     setTasks((currentTasks) => [...currentTasks, newTask]);
   }
 
-  const triageCount = tasks.filter(
-  (task) => task.status === "TRIAGE"
-).length;
+  function updateTaskPeople(
+    taskId: string,
+    people: string[]
+  ) {
+    setTasks((currentTasks) =>
+      currentTasks.map((task) =>
+        task.id === taskId
+          ? { ...task, people }
+          : task
+      )
+    );
+  }
 
-const triageTasks = tasks
-  .filter((task) => task.status === "TRIAGE")
-  .map((task) => task.title);
+  const triageTasks = tasks.filter(
+    (task) => task.status === "TRIAGE"
+  );
 
-return (
-  <Home
-    triageCount={triageCount}
-    triageTasks={triageTasks}
-    addTask={addTask}
-  />
-);
+  return (
+    <Home
+      triageCount={triageTasks.length}
+      triageTasks={triageTasks}
+      addTask={addTask}
+      updateTaskPeople={updateTaskPeople}
+    />
+  );
 }
 
 export default App;

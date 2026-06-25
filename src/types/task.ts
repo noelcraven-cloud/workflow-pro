@@ -13,5 +13,7 @@ export type Task = {
 
   taskType: "RANKED" | "BAU_WEEKLY" | "BAU_MONTHLY";
 
+  createdAt: string;
+
   outlookLink?: string;
 };
