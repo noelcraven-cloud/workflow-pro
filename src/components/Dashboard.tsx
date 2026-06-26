@@ -13,7 +13,7 @@ type HomeProps = {
 
 import { favouritePeople } from "../data/favourites";
 
-function Home({
+function Dashboard({
   triageCount,
   triageTasks,
   addTask,
@@ -256,4 +256,4 @@ function Section({
   );
 }
 
-export default Home;
+export default Dashboard;

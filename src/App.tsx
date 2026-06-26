@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import Home from "./components/Home";
+import Dashboard from "./components/Dashboard";
 import type { Task } from "./types/task";
 
 function App() {
@@ -42,7 +42,7 @@ function App() {
   );
 
   return (
-    <Home
+    <Dashboard
       triageCount={triageTasks.length}
       triageTasks={triageTasks}
       addTask={addTask}
