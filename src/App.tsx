@@ -8,38 +8,43 @@ function App() {
 
   function addTask(title: string) {
     const trimmedTitle = title.trim();
-
     if (!trimmedTitle) return;
 
     const newTask: Task = {
-  id: Date.now().toString(),
-  title: trimmedTitle,
-  status: "TRIAGE",
-  people: [],
-  personRanks: {},
-  taskType: "RANKED",
-  createdAt: new Date().toISOString(),
-};
+      id: Date.now().toString(),
+      title: trimmedTitle,
+      status: "TRIAGE",
+      people: [],
+      personRanks: {},
+      taskType: "RANKED",
+      createdAt: new Date().toISOString(),
+    };
 
     setTasks((currentTasks) => [...currentTasks, newTask]);
   }
 
-  function updateTaskPeople(
+  function updateTaskPeople(taskId: string, people: string[]) {
+    setTasks((currentTasks) =>
+      currentTasks.map((task) =>
+        task.id === taskId ? { ...task, people } : task
+      )
+    );
+  }
+
+  function updateTaskRanks(
     taskId: string,
-    people: string[]
+    personRanks: Record<string, number>
   ) {
     setTasks((currentTasks) =>
       currentTasks.map((task) =>
         task.id === taskId
-          ? { ...task, people }
+          ? { ...task, taskType: "RANKED", personRanks }
           : task
       )
     );
   }
 
-  const triageTasks = tasks.filter(
-    (task) => task.status === "TRIAGE"
-  );
+  const triageTasks = tasks.filter((task) => task.status === "TRIAGE");
 
   return (
     <Dashboard
@@ -47,6 +52,7 @@ function App() {
       triageTasks={triageTasks}
       addTask={addTask}
       updateTaskPeople={updateTaskPeople}
+      updateTaskRanks={updateTaskRanks}
     />
   );
 }
