@@ -44,22 +44,31 @@ function App() {
     );
   }
 
-  function updateTaskProject(taskId: string, project: string) {
-    setTasks((currentTasks) =>
-      currentTasks.map((task) =>
-        task.id === taskId
-          ? { ...task, project: project.trim() }
-          : task
-      )
-    );
-  }
+ function updateTaskProject(taskId: string, project: string) {
+  const trimmedProject = project.trim();
 
-  const triageTasks = tasks.filter((task) => task.status === "TRIAGE");
+  setTasks((currentTasks) =>
+    currentTasks.map((task) =>
+      task.id === taskId
+        ? {
+            ...task,
+            project: trimmedProject,
+            status: trimmedProject ? "ACTIVE" : task.status,
+          }
+        : task
+    )
+  );
+}
+
+const triageTasks = tasks.filter((task) => task.status === "TRIAGE");
+
+const activeTasks = tasks.filter((task) => task.status === "ACTIVE");
 
   return (
     <Dashboard
       triageCount={triageTasks.length}
       triageTasks={triageTasks}
+      activeTasks={activeTasks}
       addTask={addTask}
       updateTaskPeople={updateTaskPeople}
       updateTaskRanks={updateTaskRanks}

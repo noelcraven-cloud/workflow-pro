@@ -5,6 +5,7 @@ import { favouritePeople } from "../data/favourites";
 type DashboardProps = {
   triageCount: number;
   triageTasks: Task[];
+  activeTasks: Task[];
   addTask: (title: string) => void;
   updateTaskPeople: (taskId: string, people: string[]) => void;
   updateTaskRanks: (
@@ -16,8 +17,9 @@ type DashboardProps = {
 
 function Dashboard({
   triageCount,
-  triageTasks,
-  addTask,
+ triageTasks,
+activeTasks,
+addTask,
   updateTaskPeople,
   updateTaskRanks,
   updateTaskProject,
@@ -241,8 +243,46 @@ function Dashboard({
         </div>
       ))}
 
-      <Section title="👤 Me" count={0} />
-      <Section title="👥 Team" count={0} />
+      <Section
+  title="👤 Me"
+  count={activeTasks.filter((task) => task.people.includes("Me")).length}
+/>
+
+{activeTasks
+  .filter((task) => task.people.includes("Me"))
+  .map((task) => (
+    <div key={task.id} style={{ padding: "8px 12px" }}>
+      {task.personRanks?.Me ? `P${task.personRanks.Me} ` : ""}
+      {task.title}
+    </div>
+  ))}
+
+<Section
+  title="👥 Team"
+  count={activeTasks.filter((task) => !task.people.includes("Me")).length}
+/>
+
+{activeTasks
+  .filter((task) => !task.people.includes("Me"))
+  .map((task) => (
+    <div
+      key={task.id}
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        padding: "8px 12px",
+      }}
+    >
+      <span>
+        {task.people[0] && task.personRanks?.[task.people[0]]
+          ? `${task.personRanks[task.people[0]]} `
+          : ""}
+        {task.title}
+      </span>
+
+      <span>{task.people.join(" & ")}</span>
+    </div>
+  ))}
       <Section title="🔄 BAU" count={0} />
       <Section title="👤 By Person" count={0} />
       <Section title="🏷️ By Project" count={0} />
