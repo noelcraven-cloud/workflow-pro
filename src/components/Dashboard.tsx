@@ -11,6 +11,7 @@ type DashboardProps = {
     taskId: string,
     personRanks: Record<string, number>
   ) => void;
+  updateTaskProject: (taskId: string, project: string) => void;
 };
 
 function Dashboard({
@@ -19,13 +20,16 @@ function Dashboard({
   addTask,
   updateTaskPeople,
   updateTaskRanks,
+  updateTaskProject,
 }: DashboardProps) {
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [taskTitle, setTaskTitle] = useState("");
   const [editingPeopleTaskId, setEditingPeopleTaskId] = useState<string | null>(null);
   const [editingWorkflowTaskId, setEditingWorkflowTaskId] = useState<string | null>(null);
+  const [editingProjectTaskId, setEditingProjectTaskId] = useState<string | null>(null);
   const [selectedPeople, setSelectedPeople] = useState<string[]>([]);
   const [rankInputs, setRankInputs] = useState<Record<string, string>>({});
+  const [projectInput, setProjectInput] = useState("");
 
   function createTask() {
     addTask(taskTitle);
@@ -88,6 +92,25 @@ function Dashboard({
     setRankInputs({});
   }
 
+  function beginProjectAssignment(task: Task) {
+    setEditingProjectTaskId(task.id);
+    setProjectInput(task.project ?? "");
+  }
+
+  function saveProject(task: Task) {
+    updateTaskProject(task.id, projectInput);
+    setEditingProjectTaskId(null);
+    setProjectInput("");
+  }
+
+  function hasWorkflow(task: Task) {
+    return (
+      task.taskType === "RANKED" &&
+      task.personRanks &&
+      Object.keys(task.personRanks).length > 0
+    );
+  }
+
   return (
     <div style={{ maxWidth: "700px", margin: "0 auto", padding: "20px", fontFamily: "Arial, sans-serif" }}>
       <div style={{ marginBottom: "24px" }}>
@@ -120,17 +143,21 @@ function Dashboard({
             People: {task.people.length > 0 ? task.people.join(" & ") : "Unassigned"}
           </div>
 
-          {task.people.length > 0 && task.personRanks && Object.keys(task.personRanks).length > 0 && (
-            <div style={{ marginBottom: "12px" }}>
+          {hasWorkflow(task) && (
+            <div style={{ marginBottom: "8px" }}>
               Workflow: Ranked
               <br />
-              {Object.entries(task.personRanks).map(([person, rank]) => (
+              {Object.entries(task.personRanks ?? {}).map(([person, rank]) => (
                 <span key={person}>
                   {person}: P{rank}{" "}
                 </span>
               ))}
             </div>
           )}
+
+          <div style={{ marginBottom: "12px" }}>
+            Project: {task.project ? task.project : "Unassigned"}
+          </div>
 
           {editingPeopleTaskId === task.id ? (
             <>
@@ -183,12 +210,33 @@ function Dashboard({
                 </button>
               </div>
             </div>
+          ) : editingProjectTaskId === task.id ? (
+            <div style={{ borderTop: "1px solid lightgrey", paddingTop: "12px" }}>
+              <strong>Assign Project</strong>
+              <div style={{ marginTop: "12px" }}>
+                <input
+                  value={projectInput}
+                  onChange={(event) => setProjectInput(event.target.value)}
+                  placeholder="Project name"
+                  style={{ width: "100%", padding: "10px", marginBottom: "12px" }}
+                />
+                <button onClick={() => saveProject(task)}>
+                  Save Project
+                </button>
+              </div>
+            </div>
           ) : task.people.length === 0 ? (
             <button onClick={() => beginPeopleAssignment(task)}>Assign People</button>
-          ) : (
+          ) : !hasWorkflow(task) ? (
             <button onClick={() => beginWorkflowAssignment(task)}>
               Assign Workflow
             </button>
+          ) : !task.project ? (
+            <button onClick={() => beginProjectAssignment(task)}>
+              Assign Project
+            </button>
+          ) : (
+            <button disabled>Ready to Activate</button>
           )}
         </div>
       ))}

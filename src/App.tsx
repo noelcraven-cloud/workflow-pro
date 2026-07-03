@@ -44,6 +44,16 @@ function App() {
     );
   }
 
+  function updateTaskProject(taskId: string, project: string) {
+    setTasks((currentTasks) =>
+      currentTasks.map((task) =>
+        task.id === taskId
+          ? { ...task, project: project.trim() }
+          : task
+      )
+    );
+  }
+
   const triageTasks = tasks.filter((task) => task.status === "TRIAGE");
 
   return (
@@ -53,6 +63,7 @@ function App() {
       addTask={addTask}
       updateTaskPeople={updateTaskPeople}
       updateTaskRanks={updateTaskRanks}
+      updateTaskProject={updateTaskProject}
     />
   );
 }
