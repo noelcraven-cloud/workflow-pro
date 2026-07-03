@@ -12,3 +12,21 @@ export function normaliseRank(
 
   return requestedRank;
 }
+
+export function shiftRanksDown(
+  existingRanks: Record<string, number>,
+  insertionRank: number
+): Record<string, number> {
+  const updated: Record<string, number> = {};
+
+  for (const person in existingRanks) {
+    const rank = existingRanks[person];
+
+    updated[person] =
+      rank >= insertionRank
+        ? rank + 1
+        : rank;
+  }
+
+  return updated;
+}

@@ -17,21 +17,50 @@ type DashboardProps = {
 
 function Dashboard({
   triageCount,
- triageTasks,
-activeTasks,
-addTask,
+  triageTasks,
+  activeTasks,
+  addTask,
   updateTaskPeople,
   updateTaskRanks,
   updateTaskProject,
 }: DashboardProps) {
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [taskTitle, setTaskTitle] = useState("");
-  const [editingPeopleTaskId, setEditingPeopleTaskId] = useState<string | null>(null);
-  const [editingWorkflowTaskId, setEditingWorkflowTaskId] = useState<string | null>(null);
-  const [editingProjectTaskId, setEditingProjectTaskId] = useState<string | null>(null);
+  const [editingPeopleTaskId, setEditingPeopleTaskId] =
+    useState<string | null>(null);
+  const [editingWorkflowTaskId, setEditingWorkflowTaskId] =
+    useState<string | null>(null);
+  const [editingProjectTaskId, setEditingProjectTaskId] =
+    useState<string | null>(null);
   const [selectedPeople, setSelectedPeople] = useState<string[]>([]);
   const [rankInputs, setRankInputs] = useState<Record<string, string>>({});
   const [projectInput, setProjectInput] = useState("");
+
+  const myActiveTasks = activeTasks
+    .filter((task) => task.people.includes("Me"))
+    .sort((a, b) => {
+      const rankA = a.personRanks?.Me ?? Number.MAX_SAFE_INTEGER;
+      const rankB = b.personRanks?.Me ?? Number.MAX_SAFE_INTEGER;
+      return rankA - rankB;
+    });
+
+  const teamActiveTasks = activeTasks
+    .filter((task) => !task.people.includes("Me"))
+    .sort((a, b) => {
+      const personA = a.people.join(" & ");
+      const personB = b.people.join(" & ");
+
+      if (personA !== personB) {
+        return personA.localeCompare(personB);
+      }
+
+      const rankA =
+        a.personRanks?.[a.people[0]] ?? Number.MAX_SAFE_INTEGER;
+      const rankB =
+        b.personRanks?.[b.people[0]] ?? Number.MAX_SAFE_INTEGER;
+
+      return rankA - rankB;
+    });
 
   function createTask() {
     addTask(taskTitle);
@@ -114,19 +143,37 @@ addTask,
   }
 
   return (
-    <div style={{ maxWidth: "700px", margin: "0 auto", padding: "20px", fontFamily: "Arial, sans-serif" }}>
+    <div
+      style={{
+        maxWidth: "700px",
+        margin: "0 auto",
+        padding: "20px",
+        fontFamily: "Arial, sans-serif",
+      }}
+    >
       <div style={{ marginBottom: "24px" }}>
         <h1>Workflow Pro</h1>
       </div>
 
       {showQuickAdd && (
-        <div style={{ border: "1px solid lightgrey", borderRadius: "12px", padding: "16px", marginBottom: "24px" }}>
+        <div
+          style={{
+            border: "1px solid lightgrey",
+            borderRadius: "12px",
+            padding: "16px",
+            marginBottom: "24px",
+          }}
+        >
           <h3>Quick Add</h3>
           <input
             value={taskTitle}
             onChange={(event) => setTaskTitle(event.target.value)}
             placeholder="Task title"
-            style={{ width: "100%", padding: "10px", marginBottom: "12px" }}
+            style={{
+              width: "100%",
+              padding: "10px",
+              marginBottom: "12px",
+            }}
           />
           <button onClick={createTask}>Create</button>
         </div>
@@ -135,25 +182,48 @@ addTask,
       <Section title="📥 Triage" count={triageCount} />
 
       {triageTasks.map((task) => (
-        <div key={task.id} style={{ padding: "12px", marginBottom: "12px", border: "1px solid lightgrey", borderRadius: "10px" }}>
-          <div style={{ display: "flex", alignItems: "center", marginBottom: "8px" }}>
-            <input type="checkbox" disabled style={{ marginRight: "12px" }} />
+        <div
+          key={task.id}
+          style={{
+            padding: "12px",
+            marginBottom: "12px",
+            border: "1px solid lightgrey",
+            borderRadius: "10px",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              marginBottom: "8px",
+            }}
+          >
+            <input
+              type="checkbox"
+              disabled
+              style={{ marginRight: "12px" }}
+            />
             <strong>{task.title}</strong>
           </div>
 
           <div style={{ marginBottom: "8px" }}>
-            People: {task.people.length > 0 ? task.people.join(" & ") : "Unassigned"}
+            People:{" "}
+            {task.people.length > 0
+              ? task.people.join(" & ")
+              : "Unassigned"}
           </div>
 
           {hasWorkflow(task) && (
             <div style={{ marginBottom: "8px" }}>
               Workflow: Ranked
               <br />
-              {Object.entries(task.personRanks ?? {}).map(([person, rank]) => (
-                <span key={person}>
-                  {person}: P{rank}{" "}
-                </span>
-              ))}
+              {Object.entries(task.personRanks ?? {}).map(
+                ([person, rank]) => (
+                  <span key={person}>
+                    {person}: P{rank}{" "}
+                  </span>
+                )
+              )}
             </div>
           )}
 
@@ -163,17 +233,34 @@ addTask,
 
           {editingPeopleTaskId === task.id ? (
             <>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "12px" }}>
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: "8px",
+                  marginBottom: "12px",
+                }}
+              >
                 {favouritePeople.map((person) => (
-                  <button key={person} onClick={() => togglePerson(person)}>
-                    {selectedPeople.includes(person) ? `✓ ${person}` : person}
+                  <button
+                    key={person}
+                    onClick={() => togglePerson(person)}
+                  >
+                    {selectedPeople.includes(person)
+                      ? `✓ ${person}`
+                      : person}
                   </button>
                 ))}
               </div>
               <button onClick={savePeople}>Save People</button>
             </>
           ) : editingWorkflowTaskId === task.id ? (
-            <div style={{ borderTop: "1px solid lightgrey", paddingTop: "12px" }}>
+            <div
+              style={{
+                borderTop: "1px solid lightgrey",
+                paddingTop: "12px",
+              }}
+            >
               <strong>Ranked Workflow</strong>
 
               {task.people.map((person) => (
@@ -197,7 +284,13 @@ addTask,
                 </div>
               ))}
 
-              <div style={{ marginTop: "12px", display: "flex", gap: "8px" }}>
+              <div
+                style={{
+                  marginTop: "12px",
+                  display: "flex",
+                  gap: "8px",
+                }}
+              >
                 <button onClick={() => saveRankedWorkflow(task)}>
                   Save Ranked Workflow
                 </button>
@@ -213,14 +306,25 @@ addTask,
               </div>
             </div>
           ) : editingProjectTaskId === task.id ? (
-            <div style={{ borderTop: "1px solid lightgrey", paddingTop: "12px" }}>
+            <div
+              style={{
+                borderTop: "1px solid lightgrey",
+                paddingTop: "12px",
+              }}
+            >
               <strong>Assign Project</strong>
               <div style={{ marginTop: "12px" }}>
                 <input
                   value={projectInput}
-                  onChange={(event) => setProjectInput(event.target.value)}
+                  onChange={(event) =>
+                    setProjectInput(event.target.value)
+                  }
                   placeholder="Project name"
-                  style={{ width: "100%", padding: "10px", marginBottom: "12px" }}
+                  style={{
+                    width: "100%",
+                    padding: "10px",
+                    marginBottom: "12px",
+                  }}
                 />
                 <button onClick={() => saveProject(task)}>
                   Save Project
@@ -228,7 +332,9 @@ addTask,
               </div>
             </div>
           ) : task.people.length === 0 ? (
-            <button onClick={() => beginPeopleAssignment(task)}>Assign People</button>
+            <button onClick={() => beginPeopleAssignment(task)}>
+              Assign People
+            </button>
           ) : !hasWorkflow(task) ? (
             <button onClick={() => beginWorkflowAssignment(task)}>
               Assign Workflow
@@ -243,46 +349,43 @@ addTask,
         </div>
       ))}
 
-      <Section
-  title="👤 Me"
-  count={activeTasks.filter((task) => task.people.includes("Me")).length}
-/>
+      <Section title="👤 Me" count={myActiveTasks.length} />
 
-{activeTasks
-  .filter((task) => task.people.includes("Me"))
-  .map((task) => (
-    <div key={task.id} style={{ padding: "8px 12px" }}>
-      {task.personRanks?.Me ? `P${task.personRanks.Me} ` : ""}
-      {task.title}
-    </div>
-  ))}
+      {myActiveTasks.map((task) => (
+        <div key={task.id} style={{ padding: "8px 12px" }}>
+          {task.personRanks?.Me ? `P${task.personRanks.Me} ` : ""}
+          {task.title}
+        </div>
+      ))}
 
-<Section
-  title="👥 Team"
-  count={activeTasks.filter((task) => !task.people.includes("Me")).length}
-/>
+      <Section title="👥 Team" count={teamActiveTasks.length} />
 
-{activeTasks
-  .filter((task) => !task.people.includes("Me"))
-  .map((task) => (
-    <div
-      key={task.id}
-      style={{
-        display: "flex",
-        justifyContent: "space-between",
-        padding: "8px 12px",
-      }}
-    >
-      <span>
-        {task.people[0] && task.personRanks?.[task.people[0]]
-          ? `${task.personRanks[task.people[0]]} `
-          : ""}
-        {task.title}
-      </span>
+      {teamActiveTasks.map((task) => {
+        const primaryPerson = task.people[0];
+        const rank =
+          primaryPerson && task.personRanks?.[primaryPerson]
+            ? task.personRanks[primaryPerson]
+            : undefined;
 
-      <span>{task.people.join(" & ")}</span>
-    </div>
-  ))}
+        return (
+          <div
+            key={task.id}
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              padding: "8px 12px",
+            }}
+          >
+            <span>
+              {rank ? `P${rank} ` : ""}
+              {task.title}
+            </span>
+
+            <span>{task.people.join(" & ")}</span>
+          </div>
+        );
+      })}
+
       <Section title="🔄 BAU" count={0} />
       <Section title="👤 By Person" count={0} />
       <Section title="🏷️ By Project" count={0} />
@@ -317,8 +420,15 @@ type SectionProps = {
 
 function Section({ title, count }: SectionProps) {
   return (
-    <div style={{ borderBottom: "1px solid lightgrey", padding: "16px 0" }}>
-      <h2>{title} ({count})</h2>
+    <div
+      style={{
+        borderBottom: "1px solid lightgrey",
+        padding: "16px 0",
+      }}
+    >
+      <h2>
+        {title} ({count})
+      </h2>
     </div>
   );
 }
