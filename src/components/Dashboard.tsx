@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { Task } from "../types/task";
 import { favouritePeople } from "../data/favourites";
+import ActiveTaskCard from "./active/ActiveTaskCard";
 
 type DashboardProps = {
   triageCount: number;
@@ -35,6 +36,7 @@ function Dashboard({
   const [selectedPeople, setSelectedPeople] = useState<string[]>([]);
   const [rankInputs, setRankInputs] = useState<Record<string, string>>({});
   const [projectInput, setProjectInput] = useState("");
+  const [showAllMeTasks, setShowAllMeTasks] = useState(false);
 
   const myActiveTasks = activeTasks
     .filter((task) => task.people.includes("Me"))
@@ -351,12 +353,24 @@ function Dashboard({
 
       <Section title="👤 Me" count={myActiveTasks.length} />
 
-      {myActiveTasks.map((task) => (
-        <div key={task.id} style={{ padding: "8px 12px" }}>
-          {task.personRanks?.Me ? `P${task.personRanks.Me} ` : ""}
-          {task.title}
-        </div>
-      ))}
+{myActiveTasks
+  .filter((task) => {
+    const rank = task.personRanks?.Me ?? Number.MAX_SAFE_INTEGER;
+    return showAllMeTasks || rank <= 3;
+  })
+  .map((task) => (
+    <ActiveTaskCard
+  key={task.id}
+  task={task}
+  rank={task.personRanks?.Me}
+/>
+  ))}
+
+{myActiveTasks.some((task) => (task.personRanks?.Me ?? 999) > 3) && (
+  <button onClick={() => setShowAllMeTasks(!showAllMeTasks)}>
+    {showAllMeTasks ? "Hide P4+" : "Show P4+"}
+  </button>
+)}
 
       <Section title="👥 Team" count={teamActiveTasks.length} />
 
@@ -368,22 +382,12 @@ function Dashboard({
             : undefined;
 
         return (
-          <div
-            key={task.id}
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              padding: "8px 12px",
-            }}
-          >
-            <span>
-              {rank ? `P${rank} ` : ""}
-              {task.title}
-            </span>
-
-            <span>{task.people.join(" & ")}</span>
-          </div>
-        );
+  <ActiveTaskCard
+    key={task.id}
+    task={task}
+    rank={rank}
+  />
+);
       })}
 
       <Section title="🔄 BAU" count={0} />
