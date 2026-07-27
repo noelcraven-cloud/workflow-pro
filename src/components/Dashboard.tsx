@@ -7,23 +7,38 @@ type DashboardProps = {
   triageCount: number;
   triageTasks: Task[];
   activeTasks: Task[];
+  completedTasks: Task[];
+
   addTask: (title: string) => void;
-  updateTaskPeople: (taskId: string, people: string[]) => void;
+
+  updateTaskPeople: (
+    taskId: string,
+    people: string[]
+  ) => void;
+
   updateTaskRanks: (
     taskId: string,
     personRanks: Record<string, number>
   ) => void;
-  updateTaskProject: (taskId: string, project: string) => void;
+
+  updateTaskProject: (
+    taskId: string,
+    project: string
+  ) => void;
+
+  completeTask: (taskId: string) => void;
 };
 
 function Dashboard({
   triageCount,
   triageTasks,
   activeTasks,
+  completedTasks,
   addTask,
   updateTaskPeople,
   updateTaskRanks,
   updateTaskProject,
+  completeTask,
 }: DashboardProps) {
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [taskTitle, setTaskTitle] = useState("");
@@ -363,6 +378,7 @@ function Dashboard({
   key={task.id}
   task={task}
   rank={task.personRanks?.Me}
+  onComplete={completeTask}
 />
   ))}
 
@@ -383,17 +399,33 @@ function Dashboard({
 
         return (
   <ActiveTaskCard
-    key={task.id}
-    task={task}
-    rank={rank}
-  />
+  key={task.id}
+  task={task}
+  rank={rank}
+  onComplete={completeTask}
+/>
 );
       })}
 
       <Section title="🔄 BAU" count={0} />
       <Section title="👤 By Person" count={0} />
       <Section title="🏷️ By Project" count={0} />
-      <Section title="✅ Completed" count={0} />
+      <Section
+  title="✅ Completed"
+  count={completedTasks.length}
+/>
+
+{completedTasks.map((task) => (
+  <div
+    key={task.id}
+    style={{
+      padding: "8px 12px",
+      textDecoration: "line-through",
+    }}
+  >
+    {task.title}
+  </div>
+))}
 
       <button
         onClick={() => setShowQuickAdd(!showQuickAdd)}

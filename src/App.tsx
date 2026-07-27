@@ -104,21 +104,74 @@ function App() {
   );
 }
 
+function completeTask(taskId: string) {
+  setTasks((currentTasks) => {
+    const completedTask = currentTasks.find(
+      (task) => task.id === taskId
+    );
+
+    if (!completedTask) return currentTasks;
+
+    const completedRanks = completedTask.personRanks ?? {};
+
+    return currentTasks.map((task) => {
+      if (task.id === taskId) {
+        return {
+          ...task,
+          status: "COMPLETED",
+        };
+      }
+
+      const updatedRanks = {
+        ...(task.personRanks ?? {}),
+      };
+
+      let ranksChanged = false;
+
+      Object.entries(completedRanks).forEach(
+        ([person, completedRank]) => {
+          const existingRank = updatedRanks[person];
+
+          if (
+            existingRank !== undefined &&
+            existingRank > completedRank
+          ) {
+            updatedRanks[person] = existingRank - 1;
+            ranksChanged = true;
+          }
+        }
+      );
+
+      return ranksChanged
+        ? { ...task, personRanks: updatedRanks }
+        : task;
+    });
+  });
+}
+
 const triageTasks = tasks.filter((task) => task.status === "TRIAGE");
 
-const activeTasks = tasks.filter((task) => task.status === "ACTIVE");
+const activeTasks = tasks.filter(
+  (task) => task.status === "ACTIVE"
+);
+
+const completedTasks = tasks.filter(
+  (task) => task.status === "COMPLETED"
+);
 
   return (
-    <Dashboard
-      triageCount={triageTasks.length}
-      triageTasks={triageTasks}
-      activeTasks={activeTasks}
-      addTask={addTask}
-      updateTaskPeople={updateTaskPeople}
-      updateTaskRanks={updateTaskRanks}
-      updateTaskProject={updateTaskProject}
-    />
-  );
+  <Dashboard
+    triageCount={triageTasks.length}
+    triageTasks={triageTasks}
+    activeTasks={activeTasks}
+    completedTasks={completedTasks}
+    addTask={addTask}
+    updateTaskPeople={updateTaskPeople}
+    updateTaskRanks={updateTaskRanks}
+    updateTaskProject={updateTaskProject}
+    completeTask={completeTask}
+  />
+);
 }
 
 export default App;
