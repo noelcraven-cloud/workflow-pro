@@ -1,11 +1,19 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import Dashboard from "./components/Dashboard";
 import type { Task } from "./types/task";
 import { normaliseRank } from "./utils/ranking";
+import {
+  loadTasks,
+  saveTasks,
+} from "./utils/taskStorage";
 
 function App() {
-  const [tasks, setTasks] = useState<Task[]>([]);
+const [tasks, setTasks] = useState<Task[]>(loadTasks);
+
+useEffect(() => {
+  saveTasks(tasks);
+}, [tasks]);
 
   function addTask(title: string) {
     const trimmedTitle = title.trim();
@@ -39,50 +47,70 @@ function App() {
   setTasks((currentTasks) => {
     let updatedTasks = [...currentTasks];
 
-    Object.entries(personRanks).forEach(([person, requestedRank]) => {
-      const existingTasksForPerson = updatedTasks.filter(
-        (task) =>
-          task.id !== taskId &&
-          task.status === "ACTIVE" &&
-          task.people.includes(person) &&
-          task.personRanks?.[person] !== undefined
-      );
+    Object.entries(personRanks).forEach(
+      ([person, requestedRank]) => {
+        const existingTasksForPerson = updatedTasks.filter(
+          (task) =>
+            task.id !== taskId &&
+            task.status !== "COMPLETED" &&
+            task.people.includes(person) &&
+            task.personRanks?.[person] !== undefined
+        );
 
-      const insertionRank = normaliseRank(
-        requestedRank,
-        existingTasksForPerson.length
-      );
+        const insertionRank = normaliseRank(
+          requestedRank,
+          existingTasksForPerson.length
+        );
 
-      updatedTasks = updatedTasks.map((task) => {
-        if (task.id === taskId) {
-          return {
-            ...task,
-            taskType: "RANKED",
-            personRanks: {
+        updatedTasks = updatedTasks.map((task) => {
+          if (task.id === taskId) {
+            const updatedPersonRanks = {
               ...(task.personRanks ?? {}),
               [person]: insertionRank,
-            },
-          };
-        }
+            };
 
-        const existingRank = task.personRanks?.[person];
+            const hasRankForEveryPerson =
+              task.people.length > 0 &&
+              task.people.every(
+                (assignedPerson) =>
+                  updatedPersonRanks[assignedPerson] !==
+                  undefined
+              );
 
-        if (
-          existingRank !== undefined &&
-          existingRank >= insertionRank
-        ) {
-          return {
-            ...task,
-            personRanks: {
-              ...(task.personRanks ?? {}),
-              [person]: existingRank + 1,
-            },
-          };
-        }
+            return {
+              ...task,
+              taskType: "RANKED",
+              personRanks: updatedPersonRanks,
+              status: hasRankForEveryPerson
+                ? "ACTIVE"
+                : task.status,
+            };
+          }
 
-        return task;
-      });
-    });
+          const existingRank = task.personRanks?.[person];
+
+          const isRankedForPerson =
+            task.status !== "COMPLETED" &&
+            task.people.includes(person) &&
+            existingRank !== undefined;
+
+          if (
+            isRankedForPerson &&
+            existingRank >= insertionRank
+          ) {
+            return {
+              ...task,
+              personRanks: {
+                ...(task.personRanks ?? {}),
+                [person]: existingRank + 1,
+              },
+            };
+          }
+
+          return task;
+        });
+      }
+    );
 
     return updatedTasks;
   });
@@ -149,6 +177,57 @@ function completeTask(taskId: string) {
   });
 }
 
+function deleteTask(taskId: string) {
+  setTasks((currentTasks) =>
+    currentTasks.filter((task) => task.id !== taskId)
+  );
+}
+
+function restoreTask(taskId: string) {
+  setTasks((currentTasks) => {
+    const taskToRestore = currentTasks.find(
+      (task) => task.id === taskId
+    );
+
+    if (!taskToRestore) {
+      return currentTasks;
+    }
+
+    const restoredPersonRanks: Record<string, number> = {};
+
+    taskToRestore.people.forEach((person) => {
+      const existingRanks = currentTasks
+        .filter(
+          (task) =>
+            task.id !== taskId &&
+            task.status !== "COMPLETED" &&
+            task.people.includes(person)
+        )
+        .map((task) => task.personRanks?.[person])
+        .filter(
+          (rank): rank is number =>
+            rank !== undefined
+        );
+
+      restoredPersonRanks[person] =
+        existingRanks.length > 0
+          ? Math.max(...existingRanks) + 1
+          : 1;
+    });
+
+    return currentTasks.map((task) =>
+      task.id === taskId
+        ? {
+            ...task,
+            status: "ACTIVE",
+            taskType: "RANKED",
+            personRanks: restoredPersonRanks,
+          }
+        : task
+    );
+  });
+}
+
 const triageTasks = tasks.filter((task) => task.status === "TRIAGE");
 
 const activeTasks = tasks.filter(
@@ -170,6 +249,8 @@ const completedTasks = tasks.filter(
     updateTaskRanks={updateTaskRanks}
     updateTaskProject={updateTaskProject}
     completeTask={completeTask}
+    deleteTask={deleteTask}
+    restoreTask={restoreTask}
   />
 );
 }

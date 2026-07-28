@@ -2,31 +2,37 @@ export function normaliseRank(
   requestedRank: number,
   currentTaskCount: number
 ): number {
-  if (requestedRank < 1) {
-    return 1;
-  }
+  const safeRequestedRank = Number.isFinite(requestedRank)
+    ? Math.floor(requestedRank)
+    : 1;
 
-  if (requestedRank > currentTaskCount + 1) {
-    return currentTaskCount + 1;
-  }
+  const safeTaskCount = Math.max(
+    0,
+    Math.floor(currentTaskCount)
+  );
 
-  return requestedRank;
+  const maximumInsertionRank = safeTaskCount + 1;
+
+  return Math.max(
+    1,
+    Math.min(safeRequestedRank, maximumInsertionRank)
+  );
 }
 
 export function shiftRanksDown(
   existingRanks: Record<string, number>,
   insertionRank: number
 ): Record<string, number> {
-  const updated: Record<string, number> = {};
+  const updatedRanks: Record<string, number> = {};
 
-  for (const person in existingRanks) {
-    const rank = existingRanks[person];
-
-    updated[person] =
-      rank >= insertionRank
-        ? rank + 1
-        : rank;
+  for (const [person, existingRank] of Object.entries(
+    existingRanks
+  )) {
+    updatedRanks[person] =
+      existingRank >= insertionRank
+        ? existingRank + 1
+        : existingRank;
   }
 
-  return updated;
+  return updatedRanks;
 }
