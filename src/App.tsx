@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import Dashboard from "./components/Dashboard";
+import Dashboard from "./components/dashboard/Dashboard";
 import type { Task } from "./types/task";
 import { normaliseRank } from "./utils/ranking";
 import {
@@ -193,38 +193,60 @@ function restoreTask(taskId: string) {
       return currentTasks;
     }
 
-    const restoredPersonRanks: Record<string, number> = {};
+    let updatedTasks = [...currentTasks];
 
     taskToRestore.people.forEach((person) => {
-      const existingRanks = currentTasks
-        .filter(
-          (task) =>
-            task.id !== taskId &&
-            task.status !== "COMPLETED" &&
-            task.people.includes(person)
-        )
-        .map((task) => task.personRanks?.[person])
-        .filter(
-          (rank): rank is number =>
-            rank !== undefined
-        );
+      const requestedRank =
+        taskToRestore.personRanks?.[person] ?? 1;
 
-      restoredPersonRanks[person] =
-        existingRanks.length > 0
-          ? Math.max(...existingRanks) + 1
-          : 1;
-    });
+      const existingTasksForPerson = updatedTasks.filter(
+        (task) =>
+          task.id !== taskId &&
+          task.status !== "COMPLETED" &&
+          task.people.includes(person) &&
+          task.personRanks?.[person] !== undefined
+      );
 
-    return currentTasks.map((task) =>
-      task.id === taskId
-        ? {
+      const restoredRank = normaliseRank(
+        requestedRank,
+        existingTasksForPerson.length
+      );
+
+      updatedTasks = updatedTasks.map((task) => {
+        if (task.id === taskId) {
+          return {
             ...task,
             status: "ACTIVE",
             taskType: "RANKED",
-            personRanks: restoredPersonRanks,
-          }
-        : task
-    );
+            personRanks: {
+              ...(task.personRanks ?? {}),
+              [person]: restoredRank,
+            },
+          };
+        }
+
+        const existingRank = task.personRanks?.[person];
+
+        if (
+          task.status !== "COMPLETED" &&
+          task.people.includes(person) &&
+          existingRank !== undefined &&
+          existingRank >= restoredRank
+        ) {
+          return {
+            ...task,
+            personRanks: {
+              ...(task.personRanks ?? {}),
+              [person]: existingRank + 1,
+            },
+          };
+        }
+
+        return task;
+      });
+    });
+
+    return updatedTasks;
   });
 }
 

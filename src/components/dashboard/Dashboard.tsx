@@ -1,7 +1,10 @@
 import { useState } from "react";
-import type { Task } from "../types/task";
-import { favouritePeople } from "../data/favourites";
-import ActiveTaskCard from "./active/ActiveTaskCard";
+import type { Task } from "../../types/task";
+import { favouritePeople } from "../../data/favourites";
+import CompletedSection from "./CompletedSection";
+import Section from "../common/Section";
+import MeSection from "./MeSection";
+import TeamSection from "./TeamSection";
 
 type DashboardProps = {
   triageCount: number;
@@ -55,8 +58,6 @@ restoreTask,
   const [selectedPeople, setSelectedPeople] = useState<string[]>([]);
   const [rankInputs, setRankInputs] = useState<Record<string, string>>({});
   const [projectInput, setProjectInput] = useState("");
-const [showAllMeTasks, setShowAllMeTasks] = useState(false);
-const [showAllTeamTasks, setShowAllTeamTasks] = useState(false);
 
   const myActiveTasks = activeTasks
     .filter((task) => task.people.includes("Me"))
@@ -66,31 +67,9 @@ const [showAllTeamTasks, setShowAllTeamTasks] = useState(false);
       return rankA - rankB;
     });
 
-  const teamActiveTasks = activeTasks
-  .filter((task) => !task.people.includes("Me"))
-  .sort((a, b) => {
-    const personA = a.people.join(" & ");
-    const personB = b.people.join(" & ");
-
-    if (personA !== personB) {
-      return personA.localeCompare(personB);
-    }
-
-    const rankA = getTeamRank(a);
-    const rankB = getTeamRank(b);
-
-    return rankA - rankB;
-  });
-
-function getTeamRank(task: Task): number {
-  const teamRanks = task.people
-    .map((person) => task.personRanks?.[person])
-    .filter((rank): rank is number => rank !== undefined);
-
-  return teamRanks.length > 0
-    ? Math.min(...teamRanks)
-    : Number.MAX_SAFE_INTEGER;
-}
+  const teamActiveTasks = activeTasks.filter(
+  (task) => !task.people.includes("Me")
+);
 
   function createTask() {
     addTask(taskTitle);
@@ -379,117 +358,24 @@ function getTeamRank(task: Task): number {
         </div>
       ))}
 
-      <Section title="👤 Me" count={myActiveTasks.length} />
-
-{myActiveTasks
-  .filter((task) => {
-    const rank = task.personRanks?.Me ?? Number.MAX_SAFE_INTEGER;
-    return showAllMeTasks || rank <= 3;
-  })
-  .map((task) => (
-    <ActiveTaskCard
-  key={task.id}
-  task={task}
-  rank={task.personRanks?.Me}
-  onComplete={completeTask}
+      <MeSection
+  tasks={myActiveTasks}
+  completeTask={completeTask}
 />
-  ))}
 
-{myActiveTasks.some((task) => (task.personRanks?.Me ?? 999) > 3) && (
-  <button onClick={() => setShowAllMeTasks(!showAllMeTasks)}>
-    {showAllMeTasks ? "Hide P4+" : "Show P4+"}
-  </button>
-)}
-
-      <Section title="👥 Team" count={teamActiveTasks.length} />
-
-{teamActiveTasks
-  .filter((task) => {
-    const rank = getTeamRank(task);
-    return showAllTeamTasks || rank === 1;
-  })
-  .map((task) => (
-    <ActiveTaskCard
-      key={task.id}
-      task={task}
-      rank={getTeamRank(task)}
-      onComplete={completeTask}
-    />
-  ))}
-
-{teamActiveTasks.some((task) => getTeamRank(task) > 1) && (
-  <button
-    onClick={() => setShowAllTeamTasks(!showAllTeamTasks)}
-  >
-    {showAllTeamTasks ? "Hide P2+" : "Show P2+"}
-  </button>
-)}
+            <TeamSection
+  tasks={teamActiveTasks}
+  completeTask={completeTask}
+/>
 
       <Section title="🔄 BAU" count={0} />
       <Section title="👤 By Person" count={0} />
       <Section title="🏷️ By Project" count={0} />
-      <Section
-  title="✅ Completed"
-  count={completedTasks.length}
+      <CompletedSection
+  completedTasks={completedTasks}
+  restoreTask={restoreTask}
+  deleteTask={deleteTask}
 />
-
-{completedTasks.map((task) => (
-  <div
-    key={task.id}
-    style={{
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "space-between",
-      gap: "12px",
-      padding: "10px 12px",
-      marginBottom: "8px",
-      border: "1px solid lightgrey",
-      borderRadius: "8px",
-      background: "white",
-    }}
-  >
-    <span
-      style={{
-        flex: 1,
-        textDecoration: "line-through",
-        color: "#666",
-      }}
-    >
-      {task.title}
-    </span>
-
-    <div
-      style={{
-        display: "flex",
-        gap: "8px",
-      }}
-    >
-      <button
-        type="button"
-        onClick={() => restoreTask(task.id)}
-        aria-label={`Restore ${task.title}`}
-      >
-        Restore
-      </button>
-
-      <button
-        type="button"
-        onClick={() => {
-          const confirmed = window.confirm(
-            `Delete "${task.title}" permanently?`
-          );
-
-          if (confirmed) {
-            deleteTask(task.id);
-          }
-        }}
-        aria-label={`Delete ${task.title}`}
-      >
-        Delete
-      </button>
-    </div>
-  </div>
-))}
 
       <button
         onClick={() => setShowQuickAdd(!showQuickAdd)}
@@ -509,26 +395,6 @@ function getTeamRank(task: Task): number {
       >
         +
       </button>
-    </div>
-  );
-}
-
-type SectionProps = {
-  title: string;
-  count: number;
-};
-
-function Section({ title, count }: SectionProps) {
-  return (
-    <div
-      style={{
-        borderBottom: "1px solid lightgrey",
-        padding: "16px 0",
-      }}
-    >
-      <h2>
-        {title} ({count})
-      </h2>
     </div>
   );
 }
