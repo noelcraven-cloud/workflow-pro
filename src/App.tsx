@@ -261,9 +261,8 @@ const completedTasks = tasks.filter(
 );
 
   return (
-  <Dashboard
-    triageCount={triageTasks.length}
-    triageTasks={triageTasks}
+<Dashboard
+  triageTasks={triageTasks}
     activeTasks={activeTasks}
     completedTasks={completedTasks}
     addTask={addTask}
