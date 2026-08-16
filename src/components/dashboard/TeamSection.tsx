@@ -25,7 +25,18 @@ function TeamSection({
 }: TeamSectionProps) {
   const [showAllTasks, setShowAllTasks] = useState(false);
 
-  const visibleTasks = tasks.filter((task) => {
+  const visibleTasks = [...tasks]
+  .sort((a, b) => {
+    const personA = a.people.join(" & ");
+    const personB = b.people.join(" & ");
+
+    if (personA !== personB) {
+      return personA.localeCompare(personB);
+    }
+
+    return getTeamRank(a) - getTeamRank(b);
+  })
+  .filter((task) => {
     const rank = getTeamRank(task);
 
     return showAllTasks || rank === 1;

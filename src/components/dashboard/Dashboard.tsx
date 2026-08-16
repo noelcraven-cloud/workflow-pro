@@ -1,10 +1,10 @@
-import { useState } from "react";
 import type { Task } from "../../types/task";
 import CompletedSection from "./CompletedSection";
 import Section from "../common/Section";
 import MeSection from "./MeSection";
 import TeamSection from "./TeamSection";
 import TriageSection from "./TriageSection";
+import QuickAdd from "./QuickAdd";
 
 type DashboardProps = {
   triageTasks: Task[];
@@ -45,8 +45,7 @@ function Dashboard({
 deleteTask,
 restoreTask,
 }: DashboardProps) {
-  const [showQuickAdd, setShowQuickAdd] = useState(false);
-  const [taskTitle, setTaskTitle] = useState("");
+
   
 
   const myActiveTasks = activeTasks
@@ -61,13 +60,7 @@ restoreTask,
   (task) => !task.people.includes("Me")
 );
 
-  function createTask() {
-    addTask(taskTitle);
-    setTaskTitle("");
-    setShowQuickAdd(false);
-  }
-
-  
+    
   return (
     <div
       style={{
@@ -81,29 +74,7 @@ restoreTask,
         <h1>Workflow Pro</h1>
       </div>
 
-      {showQuickAdd && (
-        <div
-          style={{
-            border: "1px solid lightgrey",
-            borderRadius: "12px",
-            padding: "16px",
-            marginBottom: "24px",
-          }}
-        >
-          <h3>Quick Add</h3>
-          <input
-            value={taskTitle}
-            onChange={(event) => setTaskTitle(event.target.value)}
-            placeholder="Task title"
-            style={{
-              width: "100%",
-              padding: "10px",
-              marginBottom: "12px",
-            }}
-          />
-          <button onClick={createTask}>Create</button>
-        </div>
-      )}
+      <QuickAdd addTask={addTask} />
 
       <TriageSection
   tasks={triageTasks}
@@ -131,24 +102,6 @@ restoreTask,
   deleteTask={deleteTask}
 />
 
-      <button
-        onClick={() => setShowQuickAdd(!showQuickAdd)}
-        style={{
-          position: "fixed",
-          right: "24px",
-          bottom: "24px",
-          width: "60px",
-          height: "60px",
-          borderRadius: "50%",
-          fontSize: "36px",
-          border: "none",
-          cursor: "pointer",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
-          zIndex: 1000,
-        }}
-      >
-        +
-      </button>
     </div>
   );
 }
