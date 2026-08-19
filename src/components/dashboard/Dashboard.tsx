@@ -12,6 +12,10 @@ type DashboardProps = {
   completedTasks: Task[];
 
   addTask: (title: string) => void;
+  updateTaskTitle: (
+  taskId: string,
+  title: string
+) => void;
 
   updateTaskPeople: (
     taskId: string,
@@ -38,7 +42,8 @@ function Dashboard({
   activeTasks,
   completedTasks,
   addTask,
-  updateTaskPeople,
+updateTaskTitle,
+updateTaskPeople,
   updateTaskRanks,
   updateTaskProject,
   completeTask,
@@ -86,11 +91,15 @@ restoreTask,
       <MeSection
   tasks={myActiveTasks}
   completeTask={completeTask}
+  updateTaskTitle={updateTaskTitle}
+  updateTaskProject={updateTaskProject}
 />
 
             <TeamSection
   tasks={teamActiveTasks}
   completeTask={completeTask}
+  updateTaskTitle={updateTaskTitle}
+  updateTaskProject={updateTaskProject}
 />
 
       <Section title="🔄 BAU" count={0} />

@@ -7,11 +7,21 @@ import Section from "../common/Section";
 type MeSectionProps = {
   tasks: Task[];
   completeTask: (taskId: string) => void;
+    updateTaskTitle: (
+    taskId: string,
+    title: string
+  ) => void;
+  updateTaskProject: (
+    taskId: string,
+    project: string
+  ) => void;
 };
 
 function MeSection({
   tasks,
   completeTask,
+  updateTaskTitle,
+  updateTaskProject,
 }: MeSectionProps) {
   const [showAllTasks, setShowAllTasks] = useState(false);
 
@@ -36,11 +46,13 @@ function MeSection({
 
       {visibleTasks.map((task) => (
         <ActiveTaskCard
-          key={task.id}
-          task={task}
-          rank={task.personRanks?.Me}
-          onComplete={completeTask}
-        />
+  key={task.id}
+  task={task}
+  rank={task.personRanks?.Me}
+  onComplete={completeTask}
+  onUpdateTitle={updateTaskTitle}
+  onUpdateProject={updateTaskProject}
+/>
       ))}
 
       {hasP4Plus && (

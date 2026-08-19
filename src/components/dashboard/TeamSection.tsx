@@ -6,7 +6,18 @@ import Section from "../common/Section";
 
 type TeamSectionProps = {
   tasks: Task[];
+
   completeTask: (taskId: string) => void;
+
+  updateTaskTitle: (
+    taskId: string,
+    title: string
+  ) => void;
+
+  updateTaskProject: (
+    taskId: string,
+    project: string
+  ) => void;
 };
 
 function getTeamRank(task: Task): number {
@@ -22,6 +33,8 @@ function getTeamRank(task: Task): number {
 function TeamSection({
   tasks,
   completeTask,
+  updateTaskTitle,
+  updateTaskProject,
 }: TeamSectionProps) {
   const [showAllTasks, setShowAllTasks] = useState(false);
 
@@ -55,11 +68,13 @@ function TeamSection({
 
       {visibleTasks.map((task) => (
         <ActiveTaskCard
-          key={task.id}
-          task={task}
-          rank={getTeamRank(task)}
-          onComplete={completeTask}
-        />
+  key={task.id}
+  task={task}
+  rank={getTeamRank(task)}
+  onComplete={completeTask}
+  onUpdateTitle={updateTaskTitle}
+  onUpdateProject={updateTaskProject}
+/>
       ))}
 
       {hasP2Plus && (
