@@ -14,6 +14,12 @@ type TeamSectionProps = {
     title: string
   ) => void;
 
+moveTaskRank: (
+  taskId: string,
+  person: string,
+  requestedRank: number
+) => void;
+
   updateTaskProject: (
     taskId: string,
     project: string
@@ -34,6 +40,7 @@ function TeamSection({
   tasks,
   completeTask,
   updateTaskTitle,
+  moveTaskRank,
   updateTaskProject,
 }: TeamSectionProps) {
   const [showAllTasks, setShowAllTasks] = useState(false);
@@ -73,6 +80,7 @@ function TeamSection({
   rank={getTeamRank(task)}
   onComplete={completeTask}
   onUpdateTitle={updateTaskTitle}
+  onMoveRank={moveTaskRank}
   onUpdateProject={updateTaskProject}
 />
       ))}

@@ -27,6 +27,12 @@ type DashboardProps = {
     personRanks: Record<string, number>
   ) => void;
 
+moveTaskRank: (
+  taskId: string,
+  person: string,
+  requestedRank: number
+) => void;
+
   updateTaskProject: (
     taskId: string,
     project: string
@@ -45,7 +51,8 @@ function Dashboard({
 updateTaskTitle,
 updateTaskPeople,
   updateTaskRanks,
-  updateTaskProject,
+moveTaskRank,
+updateTaskProject,
   completeTask,
 deleteTask,
 restoreTask,
@@ -92,6 +99,7 @@ restoreTask,
   tasks={myActiveTasks}
   completeTask={completeTask}
   updateTaskTitle={updateTaskTitle}
+  moveTaskRank={moveTaskRank}
   updateTaskProject={updateTaskProject}
 />
 
@@ -99,6 +107,7 @@ restoreTask,
   tasks={teamActiveTasks}
   completeTask={completeTask}
   updateTaskTitle={updateTaskTitle}
+  moveTaskRank={moveTaskRank}
   updateTaskProject={updateTaskProject}
 />
 

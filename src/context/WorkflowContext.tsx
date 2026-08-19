@@ -1,23 +1,16 @@
 import {
   createContext,
   useContext,
-  useState,
   type ReactNode,
 } from "react";
 
-import type { Task } from "../types/task";
+import { useTasks } from "../hooks/useTasks";
 
-type WorkflowContextType = {
-  tasks: Task[];
-  addTask: (title: string) => void;
-  updateTaskPeople: (
-    taskId: string,
-    people: string[]
-  ) => void;
-};
+type WorkflowContextValue =
+  ReturnType<typeof useTasks>;
 
 const WorkflowContext =
-  createContext<WorkflowContextType | undefined>(
+  createContext<WorkflowContextValue | undefined>(
     undefined
   );
 
@@ -28,47 +21,10 @@ type WorkflowProviderProps = {
 export function WorkflowProvider({
   children,
 }: WorkflowProviderProps) {
-  const [tasks, setTasks] = useState<Task[]>([]);
-
-  function addTask(title: string) {
-    const trimmedTitle = title.trim();
-
-    if (!trimmedTitle) return;
-
-    const newTask: Task = {
-      id: Date.now().toString(),
-      title: trimmedTitle,
-      status: "TRIAGE",
-      people: [],
-      personRanks: {},
-      taskType: "RANKED",
-      createdAt: new Date().toISOString(),
-    };
-
-    setTasks((current) => [...current, newTask]);
-  }
-
-  function updateTaskPeople(
-    taskId: string,
-    people: string[]
-  ) {
-    setTasks((current) =>
-      current.map((task) =>
-        task.id === taskId
-          ? { ...task, people }
-          : task
-      )
-    );
-  }
+  const workflow = useTasks();
 
   return (
-    <WorkflowContext.Provider
-      value={{
-        tasks,
-        addTask,
-        updateTaskPeople,
-      }}
-    >
+    <WorkflowContext.Provider value={workflow}>
       {children}
     </WorkflowContext.Provider>
   );

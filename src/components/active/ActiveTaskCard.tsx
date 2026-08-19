@@ -13,6 +13,12 @@ type ActiveTaskCardProps = {
     title: string
   ) => void;
 
+  onMoveRank: (
+    taskId: string,
+    person: string,
+    requestedRank: number
+  ) => void;
+
   onUpdateProject: (
     taskId: string,
     project: string
@@ -24,6 +30,7 @@ function ActiveTaskCard({
   rank,
   onComplete,
   onUpdateTitle,
+  onMoveRank,
   onUpdateProject,
 }: ActiveTaskCardProps) {
   const [isEditingTitle, setIsEditingTitle] =
@@ -37,6 +44,12 @@ function ActiveTaskCard({
 
   const [projectInput, setProjectInput] =
     useState(task.project ?? "");
+
+    const [isEditingRank, setIsEditingRank] =
+  useState(false);
+
+const [rankInput, setRankInput] =
+  useState(rank?.toString() ?? "");
 
   function saveTitle() {
     const trimmedTitle = titleInput.trim();
@@ -64,6 +77,39 @@ function ActiveTaskCard({
     setProjectInput(task.project ?? "");
     setIsEditingProject(false);
   }
+
+function saveRank() {
+  const parsedRank = Number(rankInput);
+
+  if (
+    !Number.isFinite(parsedRank) ||
+    parsedRank < 1
+  ) {
+    return;
+  }
+
+  const person =
+    task.people.includes("Me")
+      ? "Me"
+      : task.people[0];
+
+  if (!person) {
+    return;
+  }
+
+  onMoveRank(
+    task.id,
+    person,
+    Math.floor(parsedRank)
+  );
+
+  setIsEditingRank(false);
+}
+
+function cancelRankEdit() {
+  setRankInput(rank?.toString() ?? "");
+  setIsEditingRank(false);
+}
 
   return (
     <div
@@ -107,6 +153,7 @@ function ActiveTaskCard({
                   padding: "8px",
                   marginBottom: "8px",
                 }}
+                
               />
 
               <div
@@ -132,33 +179,94 @@ function ActiveTaskCard({
             </div>
           ) : (
             <div
-              style={{
-                fontWeight: "bold",
-                fontSize: "18px",
-                marginBottom: "10px",
-              }}
-            >
-              {rank ? `P${rank} ` : ""}
-              {task.title}
+  style={{
+    fontWeight: "bold",
+    fontSize: "18px",
+    marginBottom: "10px",
+  }}
+>
+  {rank ? `P${rank} ` : ""}
+  {task.title}
 
-              <button
-                type="button"
-                onClick={() => {
-                  setTitleInput(task.title);
-                  setIsEditingTitle(true);
-                }}
-                style={{
-                  marginLeft: "10px",
-                }}
-              >
-                Edit Title
-              </button>
-            </div>
-          )}
+  <button
+    type="button"
+    onClick={() => {
+      setTitleInput(task.title);
+      setIsEditingTitle(true);
+    }}
+    style={{
+      marginLeft: "10px",
+    }}
+  >
+    Edit Title
+  </button>
 
-          <div
-            style={{
-              display: "flex",
+  <button
+    type="button"
+    onClick={() => {
+      setRankInput(
+        rank?.toString() ?? ""
+      );
+
+      setIsEditingRank(true);
+    }}
+    style={{
+      marginLeft: "8px",
+    }}
+  >
+    Edit Rank
+  </button>
+</div>
+         )}
+
+{isEditingRank && (
+  <div
+    style={{
+      marginBottom: "12px",
+    }}
+  >
+    <input
+      type="number"
+      min="1"
+      value={rankInput}
+      onChange={(event) =>
+        setRankInput(event.target.value)
+      }
+      onKeyDown={(event) => {
+        if (event.key === "Enter") {
+          saveRank();
+        }
+      }}
+      autoFocus
+      style={{
+        width: "80px",
+        padding: "8px",
+        marginRight: "8px",
+      }}
+    />
+
+    <button
+      type="button"
+      onClick={saveRank}
+    >
+      Save Rank
+    </button>
+
+    <button
+      type="button"
+      onClick={cancelRankEdit}
+      style={{
+        marginLeft: "8px",
+      }}
+    >
+      Cancel
+    </button>
+  </div>
+)}
+
+<div
+  style={{
+    display: "flex",
               flexDirection: "column",
               gap: "4px",
               fontSize: "14px",

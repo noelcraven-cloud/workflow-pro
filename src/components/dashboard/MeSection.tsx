@@ -6,11 +6,20 @@ import Section from "../common/Section";
 
 type MeSectionProps = {
   tasks: Task[];
+
   completeTask: (taskId: string) => void;
-    updateTaskTitle: (
+
+  updateTaskTitle: (
     taskId: string,
     title: string
   ) => void;
+
+  moveTaskRank: (
+    taskId: string,
+    person: string,
+    requestedRank: number
+  ) => void;
+
   updateTaskProject: (
     taskId: string,
     project: string
@@ -21,6 +30,7 @@ function MeSection({
   tasks,
   completeTask,
   updateTaskTitle,
+  moveTaskRank,
   updateTaskProject,
 }: MeSectionProps) {
   const [showAllTasks, setShowAllTasks] = useState(false);
@@ -51,6 +61,7 @@ function MeSection({
   rank={task.personRanks?.Me}
   onComplete={completeTask}
   onUpdateTitle={updateTaskTitle}
+  onMoveRank={moveTaskRank}
   onUpdateProject={updateTaskProject}
 />
       ))}

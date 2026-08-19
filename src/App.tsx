@@ -7,12 +7,13 @@ function App() {
   addTask,
   updateTaskTitle,
   updateTaskPeople,
-    updateTaskRanks,
-    updateTaskProject,
-    completeTask,
-    deleteTask,
-    restoreTask,
-  } = useTasks();
+  updateTaskRanks,
+  moveTaskRank,
+  updateTaskProject,
+  completeTask,
+  deleteTask,
+  restoreTask,
+} = useTasks();
 
   const triageTasks = tasks.filter(
     (task) => task.status === "TRIAGE"
@@ -35,6 +36,7 @@ function App() {
       updateTaskTitle={updateTaskTitle}
       updateTaskPeople={updateTaskPeople}
       updateTaskRanks={updateTaskRanks}
+      moveTaskRank={moveTaskRank}
       updateTaskProject={updateTaskProject}
       completeTask={completeTask}
       deleteTask={deleteTask}

@@ -130,6 +130,87 @@ export function useTasks() {
     });
   }
 
+function moveTaskRank(
+  taskId: string,
+  person: string,
+  requestedRank: number
+) {
+  setTasks((currentTasks) => {
+    const taskToMove = currentTasks.find(
+      (task) => task.id === taskId
+    );
+
+    if (!taskToMove) {
+      return currentTasks;
+    }
+
+    const oldRank =
+      taskToMove.personRanks?.[person];
+
+    if (oldRank === undefined) {
+      return currentTasks;
+    }
+
+    const otherTasksForPerson = currentTasks
+      .filter(
+        (task) =>
+          task.id !== taskId &&
+          task.status !== "COMPLETED" &&
+          task.people.includes(person) &&
+          task.personRanks?.[person] !== undefined
+      )
+      .sort(
+        (a, b) =>
+          (a.personRanks?.[person] ?? 0) -
+          (b.personRanks?.[person] ?? 0)
+      );
+
+    const newRank = normaliseRank(
+      requestedRank,
+      otherTasksForPerson.length
+    );
+
+    const orderedTaskIds = otherTasksForPerson.map(
+      (task) => task.id
+    );
+
+    orderedTaskIds.splice(
+      newRank - 1,
+      0,
+      taskId
+    );
+
+    const newRanksByTaskId =
+      new Map<string, number>();
+
+    orderedTaskIds.forEach(
+      (id, index) => {
+        newRanksByTaskId.set(
+          id,
+          index + 1
+        );
+      }
+    );
+
+    return currentTasks.map((task) => {
+      const newTaskRank =
+        newRanksByTaskId.get(task.id);
+
+      if (newTaskRank === undefined) {
+        return task;
+      }
+
+      return {
+        ...task,
+        personRanks: {
+          ...(task.personRanks ?? {}),
+          [person]: newTaskRank,
+        },
+      };
+    });
+  });
+}
+
   function updateTaskProject(
     taskId: string,
     project: string
@@ -308,6 +389,7 @@ function updateTaskTitle(
     updateTaskTitle,
     updateTaskPeople,
     updateTaskRanks,
+    moveTaskRank,
     updateTaskProject,
     completeTask,
     restoreTask,
